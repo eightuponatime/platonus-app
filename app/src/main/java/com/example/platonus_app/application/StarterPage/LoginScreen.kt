@@ -1,5 +1,7 @@
 package com.example.platonus_app.application.StarterPage
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.SpringSpec
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,11 +58,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.platonus_app.R
+import com.example.platonus_app.data.DatabaseManager
+import com.example.platonus_app.network.ApiClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -172,6 +178,41 @@ fun LoginScreen(navController: NavController) {
 
                     Button(
                         onClick = {
+                            scope.launch {
+                                val username = usernameState.value
+                                val password = passwordState.value
+
+                                val emptyFields = validateFields(username, password)
+
+                                if(emptyFields.isEmpty()) {
+                                    authenticationState =
+                                        if (ApiClient.logInDatabase(username, password)) {
+                                            AuthenticationState.AUTHENTICATED
+                                        } else {
+                                            AuthenticationState.UNAUTHENTICATED
+                                        }
+
+                                    when (authenticationState) {
+                                        AuthenticationState.AUTHENTICATED -> {
+
+                                            val name = ApiClient.getFirstName(username)
+                                            val group = ApiClient.getGroup(username)
+                                            navController.navigate("main/$username/$password/$name/$group")
+                                        }
+
+                                        AuthenticationState.UNAUTHENTICATED -> {
+                                            showUnsuccessfulDialog.value = true
+                                        }
+
+                                        else -> {
+                                            showUnsuccessfulDialog.value = true
+                                        }
+                                    }
+                                } else {
+                                    showEmptyFieldsDialog.value = true
+                                    emptyFieldsList.value = emptyFields
+                                }
+                            }
 
                         },
                         colors = ButtonDefaults.buttonColors(Color.Transparent),
@@ -208,16 +249,32 @@ fun LoginScreen(navController: NavController) {
 
                     val showScheduleButton = remember { mutableStateOf(false) }
 
+                    if (isChecked) {
+                        val username = usernameState.value
+                        val scheduleDao = DatabaseManager.getDatabase().scheduleDao()
+
+                        LaunchedEffect(username) {
+                            val scheduleEntity = withContext(Dispatchers.IO) {
+                                scheduleDao.getScheduleByUsername(username)
+                            }
+
+                            if (scheduleEntity != null) {
+                                showScheduleButton.value = true
+                            }
+                        }
+                    }
+
                     if (showScheduleButton.value) {
                         Button(
                             onClick = {
                                 navController.navigate("offline-schedule/${usernameState.value}")
                             },
-                            colors = ButtonDefaults.buttonColors(Color(0xFF7289DA)),
+                            colors = ButtonDefaults.buttonColors(Color.Transparent),
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
                                 .fillMaxWidth()
-                                .height(50.dp)
+                                .height(50.dp),
+                            border = BorderStroke(1.dp, Color(0xff808080))
                         ) {
                             Text(
                                 text = "schedule",
@@ -317,6 +374,34 @@ fun PasswordTextField(textColor: Color, passwordState: MutableState<String>) {
         }
     )
 }
+/*@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PasswordTextField(textColor: Color, passwordState: MutableState<String>) {
+    val buttonColor = Color(0xFF7289DA)
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+
+    TextField(
+        value = passwordState.value,
+        onValueChange = { passwordState.value = it },
+        label = { Text("Password") },
+        singleLine = true,
+        placeholder = { Text("Password") },
+        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        trailingIcon = {
+            val image = if (passwordVisible)
+                Icons.Filled.Visibility
+            else Icons.Filled.VisibilityOff
+
+            // Please provide localized description for accessibility services
+            val description = if (passwordVisible) "Hide password" else "Show password"
+
+            IconButton(onClick = {passwordVisible = !passwordVisible}){
+                Icon(imageVector  = image, description)
+            }
+        }
+    )
+}*/
 
 @Composable
 fun GradientBackgroundBrush(isVerticalGradient: Boolean, colors: List<Color>): Brush {
@@ -335,7 +420,7 @@ fun GradientBackgroundBrush(isVerticalGradient: Boolean, colors: List<Color>): B
 @Composable
 fun WrongLoginAlertDialog(onClose: () -> Unit) {
     AlertDialog(
-        containerColor = Color(0xffbbd0ff),
+        containerColor = Color(0xff282828),
         onDismissRequest = {
             onClose()
         },
@@ -366,12 +451,11 @@ fun WrongLoginAlertDialog(onClose: () -> Unit) {
                     onClick = {
                         onClose()
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        Color(0xFF7289DA)
-                    ),
+                    colors = ButtonDefaults.buttonColors(Color.Transparent),
+                    border = BorderStroke(width = 1.dp, color = Color(0xff808080))
                 ) {
                     Text(
-                        text = "ok :c",
+                        text = "ok",
                         color = Color.White,
                         fontFamily = FontFamily(Font(R.font.dankmono))
                     )

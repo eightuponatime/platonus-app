@@ -55,6 +55,9 @@ val okhttp_version = "4.11.0"
 val ktor_version = "2.3.4"
 
 dependencies {
+
+    implementation ("org.json:json:20171018")
+
     implementation ("androidx.compose.material:material-icons-extended: 1.6.0")
 
 //to fix json document was not fullt consumed

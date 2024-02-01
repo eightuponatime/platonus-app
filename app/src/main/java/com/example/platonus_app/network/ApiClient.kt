@@ -19,13 +19,14 @@ object ApiClient {
         .build()
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl("http://192.168.1.5:8080/")
+        .baseUrl("http://192.168.134.125:8080/")
         .addConverterFactory(ScalarsConverterFactory.create())
         .addConverterFactory(GsonConverterFactory.create(gson))
         .client(okHttpClient)
         .build()
 
     private val apiService: ApiService = retrofit.create(ApiService::class.java)
+
 
     suspend fun sendUserDataToServer(username: String, password: String, first_name: String,
                                      last_name: String, study_group: String): Boolean {

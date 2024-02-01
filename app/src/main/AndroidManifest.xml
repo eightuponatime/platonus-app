@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
+        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/smollheart"
         android:label="pltns"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/smollheart"
         android:supportsRtl="true"
         android:theme="@style/Theme.Platonus_app"
         tools:targetApi="31">
@@ -16,6 +17,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="pltns"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.Platonus_app">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
