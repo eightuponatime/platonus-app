@@ -247,30 +247,7 @@ fun MainPage(
                             Spacer(Modifier.height(8.dp))
                             Button(
                                 onClick = {
-                                    /*
-                                    * task calendar button realization
-                                    * */
-                                },
-                                colors = ButtonDefaults.buttonColors(Color.Transparent),
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .height(50.dp)
-                                    .width(300.dp),
-                                border = BorderStroke(1.dp, Color(0xff808080))
-                            ) {
-                                Text(
-                                    text = "task calendar",
-                                    color = Color.White,
-                                    fontSize = 15.sp,
-                                    fontFamily = FontFamily(Font(R.font.dankmono))
-                                )
-                            }
-                            Spacer(Modifier.height(8.dp))
-                            Button(
-                                onClick = {
-                                    /*
-                                    * individual plan button realization
-                                    * */
+                                    navController.navigate("plan/$username/$password/$name/$group")
                                 },
                                 colors = ButtonDefaults.buttonColors(Color.Transparent),
                                 modifier = Modifier

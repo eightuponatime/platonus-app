@@ -11,6 +11,16 @@ interface ApiService {
     @GET("/getAllUsersFromDatabase")
     suspend fun getAllUsersFromDatabase(): List<Student>
 
+    //parse the individual plan from the platonus
+    @POST("/parse-plan")
+    suspend fun parsePlan(@Body userRequest: UserRequest): String
+
+    @POST("/insertPlan")
+    suspend fun insertPlan(@Body insertPlanRequest: InsertPlanRequest): Boolean
+
+    @POST("/insertSchedule")
+    suspend fun insertSchedule(@Body insertScheduleRequest: InsertScheduleRequest): Boolean
+
     @POST("/addUser")
     suspend fun addUser(@Body studentRequest: StudentRequest): Boolean
 
@@ -25,6 +35,12 @@ interface ApiService {
 
     @POST("/checkIfUserExists")
     suspend fun checkIfUserExists(@Body existanceRequest: ExistanceRequest): Boolean
+
+    @POST("/getSchedule")
+    suspend fun getSchedule(@Body usernameRequest: UsernameRequest): String
+
+    @POST("/getPlan")
+    suspend fun getPlan(@Body usernameRequest: UsernameRequest): String
 
     @POST("/getGroup")
     suspend fun getGroup(@Body usernameRequest: UsernameRequest): String

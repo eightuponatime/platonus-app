@@ -58,6 +58,7 @@ import androidx.navigation.NavController
 import com.example.platonus_app.R
 import com.example.platonus_app.data.DatabaseManager
 import com.example.platonus_app.data.ScheduleEntity
+import com.example.platonus_app.network.ApiClient
 import com.example.platonus_app.network.ApiClient.scheduleParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -84,7 +85,7 @@ fun SchedulePage(
                 Icons.Default.Home, "main page", onClick =
                 {navController.navigate("main/$username/$password/$name/$group")}),
             MenuItem(
-                Icons.Default.Face, "user List", onClick =
+                Icons.Default.Face, "user list", onClick =
                 {navController.navigate("user-list/$username/$password/$name/$group")})
         )
         val selectedItem = remember { mutableStateOf(menuItems[0]) }
@@ -221,7 +222,7 @@ fun SchedulePage(
                                                 result = json.getString("result")
                                                 if (result.startsWith("Понедельник")) {
                                                     val scheduleDao = DatabaseManager.getDatabase().scheduleDao()
-
+                                                    ApiClient.insertScheduleInDatabase(username, result)
                                                     val existingSchedule = scheduleDao.getScheduleByUsername(username)
 
                                                     if (existingSchedule != null) {

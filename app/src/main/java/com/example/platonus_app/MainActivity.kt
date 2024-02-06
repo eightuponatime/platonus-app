@@ -19,10 +19,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.platonus_app.application.Arguments.MainPageArguments
 import com.example.platonus_app.application.Arguments.OfflineScheduleArguments
+import com.example.platonus_app.application.Arguments.PlanPageArguments
 import com.example.platonus_app.application.Arguments.SchedulePageArguments
 import com.example.platonus_app.application.Arguments.UserListPageArguments
 import com.example.platonus_app.application.Arguments.UserPageArguments
 import com.example.platonus_app.application.LoggedPage.MainPage
+import com.example.platonus_app.application.LoggedPage.PlanPage
 import com.example.platonus_app.application.LoggedPage.SchedulePage
 import com.example.platonus_app.application.LoggedPage.UserListPage
 import com.example.platonus_app.application.LoggedPage.UserPage
@@ -53,7 +55,7 @@ class MainActivity : ComponentActivity() {
 
                     //navigator to user list page
                     composable(
-                        route = "user-list/{username}/{password}/{name}/{group}/{password}",
+                        route = "user-list/{username}/{password}/{name}/{group}",
                         arguments = listOf(
                             navArgument("username") {},
                             navArgument("password") {},
@@ -136,7 +138,7 @@ class MainActivity : ComponentActivity() {
 
                     }
 
-                    //navigator to user page
+                    //navigator to schedule page
                     composable(
                         route = "schedule/{username}/{password}/{name}/{group}",
                         arguments = listOf(
@@ -158,6 +160,31 @@ class MainActivity : ComponentActivity() {
                             password = arguments.password,
                             name = arguments.name,
                             group = arguments.group,
+                        )
+                    }
+
+                    //navigator to individual plan page
+                    composable(
+                        route = "plan/{username}/{password}/{name}/{group}",
+                        arguments = listOf(
+                            navArgument("username") {},
+                            navArgument("password") {},
+                            navArgument("name") {},
+                            navArgument("group") {}
+                        )
+                    ) { backStackEntry ->
+                        val arguments = PlanPageArguments(
+                            username = backStackEntry.arguments?.getString("username") ?: "",
+                            password = backStackEntry.arguments?.getString("password") ?: "",
+                            name = backStackEntry.arguments?.getString("name") ?: "",
+                            group = backStackEntry.arguments?.getString("group") ?: ""
+                        )
+                        PlanPage(
+                            navController = navController,
+                            username = arguments.username,
+                            password = arguments.password,
+                            name = arguments.name,
+                            group = arguments.group
                         )
                     }
 

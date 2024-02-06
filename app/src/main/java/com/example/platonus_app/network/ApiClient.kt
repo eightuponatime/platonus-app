@@ -19,14 +19,14 @@ object ApiClient {
         .build()
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl("http://192.168.134.125:8080/")
+        //.baseUrl("http://192.168.236.125:8080/")
+        .baseUrl("http://192.168.1.5:8080/")
         .addConverterFactory(ScalarsConverterFactory.create())
         .addConverterFactory(GsonConverterFactory.create(gson))
         .client(okHttpClient)
         .build()
 
     private val apiService: ApiService = retrofit.create(ApiService::class.java)
-
 
     suspend fun sendUserDataToServer(username: String, password: String, first_name: String,
                                      last_name: String, study_group: String): Boolean {
@@ -36,6 +36,7 @@ object ApiClient {
 
         return apiService.addUser(studentReq)
     }
+
 
     suspend fun logInDatabase(username: String, password: String): Boolean {
         val loginReq = LoginRequest(username, password)
@@ -47,6 +48,24 @@ object ApiClient {
         val parseReq = ParseRequest(username, password)
 
         return apiService.parseSchedule(parseReq)
+    }
+
+    suspend fun parseIndividualPlan(username: String, password: String): String {
+        val userReq = UserRequest(username, password)
+
+        return apiService.parsePlan(userReq)
+    }
+
+    suspend fun insertIndividualPlan(username: String, plan: String): Boolean {
+        val insertPlanRequest = InsertPlanRequest(username, plan)
+
+        return apiService.insertPlan(insertPlanRequest)
+    }
+
+    suspend fun insertScheduleInDatabase(username: String, schedule: String): Boolean {
+        val insertScheduleRequest = InsertScheduleRequest(username, schedule)
+
+        return apiService.insertSchedule(insertScheduleRequest)
     }
 
     suspend fun getAllUsersFromDatabase(): List<Student> {
@@ -69,6 +88,30 @@ object ApiClient {
         val existanceRequest = ExistanceRequest(username)
 
         return apiService.checkIfUserExists(existanceRequest)
+    }
+
+    suspend fun getSchedule(username: String): String {
+        val scheduleRequest = UsernameRequest(username)
+
+        return try {
+            val schedule = apiService.getSchedule(scheduleRequest)
+            schedule
+        } catch(e: Exception) {
+            println("Error getting schedule: ${e.message}")
+            ""
+        }
+    }
+
+    suspend fun getPlan(username: String): String {
+        val planRequest = UsernameRequest(username)
+
+        return try {
+            val plan = apiService.getPlan(planRequest)
+            plan
+        } catch(e: Exception) {
+            println("Error getting schedule: ${e.message}")
+            ""
+        }
     }
 
     suspend fun getGroup(username: String): String {

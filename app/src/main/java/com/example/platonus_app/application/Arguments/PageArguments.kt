@@ -18,6 +18,13 @@ data class SchedulePageArguments(
     val group: String
 )
 
+data class PlanPageArguments(
+    val username: String,
+    val password: String,
+    val name: String,
+    val group: String
+)
+
 data class UserListPageArguments(
     val username: String,
     val password: String,

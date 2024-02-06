@@ -14,6 +14,18 @@ data class StudentRequest(
     @SerializedName("study_group") val study_group: String
 )
 
+//send the plan to the database
+data class InsertPlanRequest(
+    @SerializedName("username") val username: String,
+    @SerializedName("plan") val plan: String
+)
+
+//send the schedule to the database
+data class InsertScheduleRequest(
+    @SerializedName("username") val username: String,
+    @SerializedName("schedule") val schedule: String
+)
+
 data class ExistanceRequest(
     @SerializedName("username") val username: String
 )

@@ -2,8 +2,6 @@ package com.example.platonus_app.application.LoggedPage
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,16 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -51,9 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,20 +54,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.platonus_app.R
-import com.example.platonus_app.application.StarterPage.GradientBackgroundBrush
-import com.example.platonus_app.network.ApiClient.getAllUsersFromDatabase
-import com.example.platonus_app.network.Student
+import com.example.platonus_app.data.DatabaseManager
+import com.example.platonus_app.data.ScheduleEntity
+import com.example.platonus_app.network.ApiClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserListPage(
+fun PlanPage(
     navController: NavController,
-    password: String,
     username: String,
+    password: String,
     name: String,
     group: String
 ) {
@@ -87,13 +80,13 @@ fun UserListPage(
         val scope = rememberCoroutineScope()
         val menuItems = listOf(
             MenuItem(
-                Icons.Default.Home, "main page", onClick =
+                Icons.Default.Home,"main page", onClick =
                 {navController.navigate("main/$username/$password/$name/$group")}),
             MenuItem(
-                Icons.Default.Face, "user List", onClick =
+                Icons.Default.Face, "user list", onClick =
                 {navController.navigate("user-list/$username/$password/$name/$group")})
-        )
-        val selectedItem = remember { mutableStateOf(menuItems[0]) }
+            )
+            val selectedItem = remember { mutableStateOf(menuItems[0])}
 
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -206,59 +199,92 @@ fun UserListPage(
                             .background(Color.Black),
                         contentAlignment = Alignment.TopCenter
                     ) {
-                        var students by remember { mutableStateOf(emptyList<Student>()) }
-                        var searchRequest by remember { mutableStateOf("") }
-
-                        LaunchedEffect(Unit) {
-                            val result = scope.async {
-                                getAllUsersFromDatabase()
-                            }
-
-                            students = result.await()
+                        var result by remember {
+                            mutableStateOf("")
                         }
-                        Column() {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color.Transparent)
-                                    .border(2.dp, Color.White),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Bottom
-                            ) {
-                                BasicTextField(
-                                    value = searchRequest,
-                                    onValueChange = {
-                                        searchRequest = it
-                                    },
-                                    textStyle = TextStyle(
-                                        color = Color.White,
-                                        fontSize = 24.sp,
-                                        fontFamily = FontFamily(Font(R.font.dankmono)),
-                                    ),
-                                    cursorBrush = SolidColor(Color.White),
-                                    modifier = Modifier
-                                        .height(50.dp)
-                                        .background(Color.Transparent)
-                                        .weight(1f)
-                                        .border(2.dp, Color.White)
-                                        .padding(5.dp, 8.dp)
-                                )
-                                IconButton(
+                        LaunchedEffect(Unit) {
+                            try {
+                                val plan = ApiClient.getPlan(username)
+                                result = plan
+                            } catch (e: Exception) {
+                                println("Error fetching plan: ${e.message}")
+                            }
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                        ) {
+                            Row{
+                                Button(
                                     onClick = {
-                                        //data base search realization
-                                    }
+                                        result = "parsing result waiting room..."
+                                        CoroutineScope(Dispatchers.IO).launch {
+
+                                            try {
+                                                val resultJson = ApiClient.parseIndividualPlan(username, password)
+                                                val json = JSONObject(resultJson)
+                                                result = json.getString("result")
+                                                ApiClient.insertIndividualPlan(username, result)
+                                                /*if (result.startsWith("Предмет")) {
+
+                                                }*/
+                                            } catch (e: Exception) {
+                                                println("")
+                                            }
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(Color.Transparent),
+                                    border = BorderStroke(width = 1.dp, color = Color(0xff808080))
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Search,
-                                        contentDescription = "Search",
-                                        tint = Color.White
+                                    Text(
+                                        text = "parse plan",
+                                        fontFamily = FontFamily(Font(R.font.dankmono)),
+                                        color = Color.White
                                     )
                                 }
+
+
+                                Spacer(Modifier.width(8.dp))
                             }
 
-                            LazyColumn {
-                                items(students) { student ->
-                                    UserItem(student, navController, username, password, name, group)
+                            LazyColumn(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .fillMaxSize()
+                            ) {
+                                if (result.isNotEmpty()) {
+                                    val dayStrings = result.split("splitter")
+
+
+                                    for ((index, dayString) in dayStrings.withIndex()) {
+                                        item {
+                                            Card(
+                                                colors = CardDefaults.cardColors(Color.Transparent),
+                                                border = BorderStroke(1.dp, Color(0xff808080)),
+                                                modifier = Modifier.fillMaxWidth()
+                                                    .padding(0.dp,0.dp,0.dp,8.dp)
+                                            ) {
+                                                Column {
+                                                    Text(
+                                                        text = dayString.trim(),
+                                                        color = Color.White,
+                                                        fontFamily = FontFamily(Font(R.font.dankmono)),
+                                                        modifier = Modifier.padding(15.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    item {
+                                        Text(
+                                            text = result,
+                                            color = Color.White,
+                                            fontFamily = FontFamily(Font(R.font.dankmono)),
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -266,72 +292,6 @@ fun UserListPage(
                 }
             }
         )
-    }
-}
 
-@Composable
-fun UserItem(student: Student, navController: NavController, username: String, name: String, group: String, password: String) {
-    //var photoBitmap: ImageBitmap? by remember { mutableStateOf(null) }
-
-    /*LaunchedEffect(Unit) {
-        val photoBytes = getImage(student.username)
-        if (photoBytes.isNotEmpty()) {
-            photoBitmap = BitmapFactory.decodeByteArray(photoBytes, 0, photoBytes.size).asImageBitmap()
-        }
-    }*/
-    Card(
-        colors = CardDefaults.cardColors(Color.Transparent),
-        border = BorderStroke(1.dp, Color(0xff808080)),
-        modifier = Modifier
-            .padding(16.dp, 4.dp, 16.dp)
-            .clickable {
-                if(student.username != username) {
-                    navController.navigate(
-                        "user-page/$username/$password/$name/$group/${student.username}/${student.first_name}/${student.study_group}")
-                } else if (student.username == username) {
-                    navController.navigate("main/$username/$password/$name/$group")
-                }
-            }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            /*if (photoBitmap != null) {
-                Image(
-                    bitmap = photoBitmap!!,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                )
-            }*/
-
-            Spacer(modifier = Modifier.width(16.dp))
-            Column() {
-                Row() {
-                    Text(
-                        text = "Name: ${student.first_name} ",
-                        color = Color.White,
-                        fontFamily = FontFamily(Font(R.font.dankmono))
-                    )
-                    //Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "${student.last_name}",
-                        color = Color.White,
-                        fontFamily = FontFamily(Font(R.font.dankmono))
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Group: ${student.study_group}",
-                    color = Color.White,
-                    fontFamily = FontFamily(Font(R.font.dankmono))
-                )
-            }
-        }
     }
 }

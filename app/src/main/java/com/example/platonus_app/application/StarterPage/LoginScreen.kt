@@ -162,8 +162,9 @@ fun LoginScreen(navController: NavController) {
                                 }
                             },
                             colors = CheckboxDefaults.colors(
-                                checkedColor = Color(0xffffffff),
-                                uncheckedColor = Color.LightGray
+                                checkedColor = Color.Transparent,
+                                uncheckedColor = Color.LightGray,
+
                             )
                         )
                     }
@@ -374,34 +375,6 @@ fun PasswordTextField(textColor: Color, passwordState: MutableState<String>) {
         }
     )
 }
-/*@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PasswordTextField(textColor: Color, passwordState: MutableState<String>) {
-    val buttonColor = Color(0xFF7289DA)
-    var passwordVisible by rememberSaveable { mutableStateOf(false) }
-
-    TextField(
-        value = passwordState.value,
-        onValueChange = { passwordState.value = it },
-        label = { Text("Password") },
-        singleLine = true,
-        placeholder = { Text("Password") },
-        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        trailingIcon = {
-            val image = if (passwordVisible)
-                Icons.Filled.Visibility
-            else Icons.Filled.VisibilityOff
-
-            // Please provide localized description for accessibility services
-            val description = if (passwordVisible) "Hide password" else "Show password"
-
-            IconButton(onClick = {passwordVisible = !passwordVisible}){
-                Icon(imageVector  = image, description)
-            }
-        }
-    )
-}*/
 
 @Composable
 fun GradientBackgroundBrush(isVerticalGradient: Boolean, colors: List<Color>): Brush {
